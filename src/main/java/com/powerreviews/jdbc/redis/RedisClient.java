@@ -12,8 +12,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
@@ -50,6 +53,11 @@ public class RedisClient {
         String redisPassword = (String)fullProperties.get("redisPassword");
         log.debug("Redis Password: {}", redisPassword);
 
+        Set<String> redisSentinels =
+            (fullProperties.get("redisSentinels") != null) ?
+            new HashSet<>(Arrays.asList(((String)fullProperties.get("redisSentinels")).split(","))) : null;
+        log.debug("Redis Sentinels: {}", redisSentinels);
+
         this.redisExpiration = fullProperties.get("redisExpiration") != null ?
                                 Integer.parseInt((String)fullProperties.get("redisExpiration")) : null;
         log.debug("Redis Expiration seconds: {}", redisExpiration);
@@ -67,7 +75,11 @@ public class RedisClient {
 
         // Try to connect to Redis
         try {
-            this.jedisClient = jedisFactory.createJedisClient(redisUrl, redisPort);
+            if (redisSentinels != null) {
+                this.jedisClient = jedisFactory.createJedisSentinelClient(redisUrl, redisSentinels);
+            } else {
+                this.jedisClient = jedisFactory.createJedisClient(redisUrl, redisPort);
+            }
 
             if (this.jedisClient != null) {
                 //Select the correct index if specified

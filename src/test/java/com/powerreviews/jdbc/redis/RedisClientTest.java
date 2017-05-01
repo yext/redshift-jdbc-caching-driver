@@ -16,6 +16,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
 
 import static org.mockito.Mockito.*;
@@ -82,6 +84,21 @@ public class RedisClientTest {
 
         verify(jedisFactoryMock).createJedisClient("redisHost", 1234);
         verify(jedisClientMock).auth("test");
+        verify(jedisClientMock).info();
+    }
+
+    @Test
+    public void testConstructorRedisSentinels() {
+        String jdbcUrl = "jdbc:redshiftcached://redshiftHost:redshiftPort/redshiftDb?redisUrl=redisMaster&redisSentinels=foo,bar";
+
+        Jedis jedisClientMock = mock(Jedis.class);
+
+        JedisFactory jedisFactoryMock = mock(JedisFactory.class);
+        when(jedisFactoryMock.createJedisSentinelClient(anyString(), anySetOf(String.class))).thenReturn(jedisClientMock);
+
+        new RedisClient(jdbcUrl, null, jedisFactoryMock);
+
+        verify(jedisFactoryMock).createJedisSentinelClient("redisMaster", new HashSet<String>(Arrays.asList("foo", "bar")));
         verify(jedisClientMock).info();
     }
 
