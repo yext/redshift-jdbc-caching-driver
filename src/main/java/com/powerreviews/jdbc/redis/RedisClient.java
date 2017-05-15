@@ -95,6 +95,9 @@ public class RedisClient {
             }
         } catch(JedisConnectionException jce) {
             log.error("Unable to connect to Redis server:", jce);
+            if (this.jedisClient != null) {
+                this.jedisClient.close();
+            }
             this.jedisClient = null;
         }
     }
