@@ -4,6 +4,7 @@ import com.sun.rowset.CachedRowSetImpl;
 import org.apache.commons.lang3.StringUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import javax.sql.rowset.CachedRowSet;
 import java.io.*;
@@ -195,7 +196,7 @@ public class RedisClient {
                     this.jedisClient.expire(sql.getBytes(), this.redisExpiration);
                 }
             }
-        } catch(JedisConnectionException jce) {
+        } catch (JedisConnectionException | JedisDataException e) {
             log.error("Error retrieving object from Redis. Key: {}", sql);
             return null;
         }
@@ -271,11 +272,8 @@ public class RedisClient {
             } else {
                 log.debug("Object not cached because size is too large. Key: {}", sql);
             }
-        } catch (IOException e) {
+        } catch (IOException | JedisConnectionException | JedisDataException e) {
             log.error("Unable to cache object", e);
-            // Nothing to do, return the result set without caching
-        } catch (JedisConnectionException jce) {
-            log.error("Unable to cache object", jce);
             // Nothing to do, return the result set without caching
         } finally {
             if(out != null) {
