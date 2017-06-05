@@ -12,8 +12,8 @@ import redis.clients.jedis.JedisPoolConfig;
  */
 public class JedisFactory {
     private static JedisSentinelPool pool;
-    private static int MAX_IDLE_POOL_CONNECTIONS = 128;
-    private static int MAX_TOTAL_POOL_CONNECTIONS = 128;
+    private static int MAX_IDLE_POOL_CONNECTIONS = 400;
+    private static int MAX_TOTAL_POOL_CONNECTIONS = 400;
 
     public Jedis createJedisClient(String url, Integer port) {
         if(StringUtils.isEmpty(url)) {
